@@ -29,7 +29,9 @@
 #include <stdbool.h>
 #include <syslog.h>
 #include <time.h>
+#ifndef __PX4_NUTTX
 #include <linux/can/error.h>
+#endif
 
 #include "CO_error.h"
 #include "301/CO_driver.h"
@@ -47,6 +49,8 @@ static CO_CANinterfaceState_t CO_CANerrorSetListenOnly(
     clock_gettime(CLOCK_MONOTONIC, &CANerrorhandler->timestamp);
     CANerrorhandler->listenOnly = true;
 
+#ifndef __PX4_NUTTX
+    // System command is not implemented in nuttx
     if (resetIf) {
         int ret;
         char command[100];
@@ -61,8 +65,19 @@ static CO_CANinterfaceState_t CO_CANerrorSetListenOnly(
         }
 
     }
+#endif
 
     return CO_INTERFACE_LISTEN_ONLY;
+}
+
+void log_printf(int priority, const char *format, ...) {
+    // TODO: fix logging. This is just a temp solution to satisfy the compiler.
+    // This has been copied from CO_main_basic.c and simplified to be able to compile the code.
+    va_list ap;
+
+    va_start(ap, format);
+    vsyslog(priority, format, ap);
+    va_end(ap);
 }
 
 

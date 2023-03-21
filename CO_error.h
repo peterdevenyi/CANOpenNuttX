@@ -29,9 +29,15 @@
 #define CO_ERROR_H
 
 #include <stdint.h>
+#include <stdarg.h>
+#include <syslog.h>
 #include <errno.h>
 #include <string.h>
+#ifdef __PX4_NUTTX
+#include <nuttx/can.h>
+#else
 #include <linux/can.h>
+#endif
 #include <net/if.h>
 
 #if __has_include("CO_error_custom.h")
@@ -73,7 +79,6 @@ extern "C" {
  * @param format format string as in printf
  */
 void log_printf(int priority, const char *format, ...);
-
 
 /**
  * driver interface state

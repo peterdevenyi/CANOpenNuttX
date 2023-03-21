@@ -579,12 +579,19 @@ void CO_epoll_processGtw(CO_epoll_gtw_t *epGtw,
         ) {
             bool_t fail = false;
 
-            epGtw->gtwa_fd = accept4(epGtw->gtwa_fdSocket,
-                                     NULL, NULL, SOCK_NONBLOCK);
+            // TODO: makes ure this is tested and accept is non-blocking
+            // epGtw->gtwa_fd = accept4(epGtw->gtwa_fdSocket,
+            //                          NULL, NULL, SOCK_NONBLOCK);
+            epGtw->gtwa_fd = accept(epGtw->gtwa_fdSocket,
+                                     NULL, NULL);
             if (epGtw->gtwa_fd < 0) {
                 fail = true;
-                if (errno != EAGAIN && errno != EWOULDBLOCK) {
-                    log_printf(LOG_CRIT, DBG_ERRNO, "accept(gtwa_fdSocket)");
+                // This line throws "error: logical ‘and’ of equal expressions [-Werror=logical-op]". Issue raised here https://gcc.gnu.org/bugzilla/show_bug.cgi?id=69602
+                // Workaround is to break up this expression in two if-s
+                if (errno != EAGAIN)
+                {
+                    if (errno != EWOULDBLOCK)
+                        log_printf(LOG_CRIT, DBG_ERRNO, "accept(gtwa_fdSocket)");
                 }
             }
             else {
