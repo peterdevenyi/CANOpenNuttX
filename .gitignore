@@ -12,3 +12,6 @@
 
 #kdevelop
 *.kdev4
+
+./OD.c
+./OD.h

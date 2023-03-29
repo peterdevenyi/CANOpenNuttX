@@ -33,7 +33,7 @@
 #include <syslog.h>
 #include <errno.h>
 #include <string.h>
-#ifdef __PX4_NUTTX
+#ifdef NUTTX_PLATFORM
 #include <nuttx/can.h>
 #else
 #include <linux/can.h>

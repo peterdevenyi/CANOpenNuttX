@@ -41,7 +41,7 @@
 #ifndef CO_SINGLE_THREAD
 #include <pthread.h>
 #endif
-#ifdef __PX4_NUTTX
+#ifdef NUTTX_PLATFORM
 #include <nuttx/can.h>
 #include <netpacket/can.h>
 #else
@@ -88,7 +88,6 @@ extern "C" {
 #define CO_CONFIG_EM (CO_CONFIG_EM_PRODUCER | \
                       CO_CONFIG_EM_PROD_CONFIGURABLE | \
                       CO_CONFIG_EM_PROD_INHIBIT | \
-                      CO_CONFIG_EM_HISTORY | \
                       CO_CONFIG_EM_STATUS_BITS | \
                       CO_CONFIG_EM_CONSUMER | \
                       CO_CONFIG_GLOBAL_FLAG_CALLBACK_PRE | \
@@ -132,14 +131,15 @@ extern "C" {
 #endif
 
 #ifndef CO_CONFIG_GTW
-#define CO_CONFIG_GTW (CO_CONFIG_GTW_ASCII | \
+#define CO_CONFIG_GTW 0
+/*#define CO_CONFIG_GTW (CO_CONFIG_GTW_ASCII | \
                        CO_CONFIG_GTW_ASCII_SDO | \
                        CO_CONFIG_GTW_ASCII_NMT | \
                        CO_CONFIG_GTW_ASCII_LSS | \
                        CO_CONFIG_GTW_ASCII_LOG | \
                        CO_CONFIG_GTW_ASCII_ERROR_DESC | \
                        CO_CONFIG_GTW_ASCII_PRINT_HELP | \
-                       CO_CONFIG_GTW_ASCII_PRINT_LEDS)
+                       CO_CONFIG_GTW_ASCII_PRINT_LEDS)*/
 #define CO_CONFIG_GTW_BLOCK_DL_LOOP 3
 #define CO_CONFIG_GTWA_COMM_BUF_SIZE 2000
 #define CO_CONFIG_GTWA_LOG_BUF_SIZE 10000

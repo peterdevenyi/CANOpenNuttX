@@ -29,7 +29,7 @@
 #include <stdbool.h>
 #include <syslog.h>
 #include <time.h>
-#ifndef __PX4_NUTTX
+#ifndef NUTTX_PLATFORM
 #include <linux/can/error.h>
 #endif
 
@@ -49,7 +49,7 @@ static CO_CANinterfaceState_t CO_CANerrorSetListenOnly(
     clock_gettime(CLOCK_MONOTONIC, &CANerrorhandler->timestamp);
     CANerrorhandler->listenOnly = true;
 
-#ifndef __PX4_NUTTX
+#ifndef NUTTX_PLATFORM
     // System command is not implemented in nuttx
     if (resetIf) {
         int ret;

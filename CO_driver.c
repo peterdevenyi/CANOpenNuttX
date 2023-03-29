@@ -29,7 +29,7 @@
 #include <unistd.h>
 #include <errno.h>
 #include <syslog.h>
-#ifdef __PX4_NUTTX
+#ifdef NUTTX_PLATFORM
 #include <sys/time.h>
 #include <nuttx/can.h>
 #else
@@ -55,7 +55,7 @@ static CO_ReturnError_t CO_CANmodule_addInterface(CO_CANmodule_t *CANmodule,
                                                   int can_ifindex);
 #endif
 
-#ifdef __PX4_NUTTX
+#ifdef NUTTX_PLATFORM
 /* from #include <linux/net_tstamp.h> - since Linux 2.6.30 */
 #define SOF_TIMESTAMPING_SOFTWARE (1<<4)
 #define SOF_TIMESTAMPING_RX_SOFTWARE (1<<3)

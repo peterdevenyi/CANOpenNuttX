@@ -35,6 +35,9 @@
 #include <syslog.h>
 #include <time.h>
 #include <fcntl.h>
+#ifdef NUTTX_PLATFORM
+#include <sys/timerfd.h>
+#endif
 
 #if (CO_CONFIG_GTW) & CO_CONFIG_GTW_ASCII
 #include <stdio.h>
