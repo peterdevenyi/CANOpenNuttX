@@ -71,12 +71,12 @@ static CO_CANinterfaceState_t CO_CANerrorSetListenOnly(
 }
 
 void log_printf(int priority, const char *format, ...) {
-    // TODO: fix logging. This is just a temp solution to satisfy the compiler.
+    // lo27/flight_controller/flight_controller_px4#29: TODO: fix logging. This is just a temp solution to satisfy the compiler.
     // This has been copied from CO_main_basic.c and simplified to be able to compile the code.
     va_list ap;
 
     va_start(ap, format);
-    vsyslog(priority, format, ap);
+    vprintf(format, ap);
     va_end(ap);
 }
 
