@@ -37,6 +37,7 @@
 #include <fcntl.h>
 #ifdef NUTTX_PLATFORM
 #include <sys/timerfd.h>
+#include <sys/eventfd.h>
 #endif
 
 #if (CO_CONFIG_GTW) & CO_CONFIG_GTW_ASCII
@@ -78,7 +79,7 @@ CO_ReturnError_t CO_epoll_create(CO_epoll_t *ep, uint32_t timerInterval_us) {
 
     /* Configure epoll for mainline */
     ep->epoll_new = false;
-    ep->epoll_fd = epoll_create(1);
+    ep->epoll_fd = epoll_create(3);
     if (ep->epoll_fd < 0) {
         log_printf(LOG_CRIT, DBG_ERRNO, "epoll_create()");
         return CO_ERROR_SYSCALL;
@@ -143,52 +144,63 @@ void CO_epoll_close(CO_epoll_t *ep) {
 }
 
 
-void CO_epoll_wait(CO_epoll_t *ep) {
+void CO_epoll_wait(CO_epoll_t *ep, CO_t *co) {
     if (ep == NULL) {
         return;
     }
-
     /* wait for an event */
-    int ready = epoll_wait(ep->epoll_fd, &ep->ev, 1, -1);
+    int ready = epoll_wait(ep->epoll_fd, &ep->ev, 10, -1);
     ep->epoll_new = true;
     ep->timerEvent = false;
-
     /* calculate time difference since last call */
     uint64_t now = clock_gettime_us();
     ep->timeDifference_us = (uint32_t)(now - ep->previousTime_us);
     ep->previousTime_us = now;
     /* application may will lower this */
     ep->timerNext_us = ep->timerInterval_us;
-
     /* process event */
-    if (ready != 1 && errno == EINTR) {
+    if (ready < 1 && errno == EINTR) {
         /* event from interrupt or signal, nothing to process, continue */
         ep->epoll_new = false;
     }
-    else if (ready != 1) {
+    else if (ready < 1) {
         log_printf(LOG_DEBUG, DBG_ERRNO, "epoll_wait");
         ep->epoll_new = false;
     }
-    else if ((ep->ev.events & EPOLLIN) != 0
-             && ep->ev.data.fd == ep->event_fd
-    ) {
-        uint64_t val;
-        ssize_t s = read(ep->event_fd, &val, sizeof(uint64_t));
-        if (s != sizeof(uint64_t)) {
-            log_printf(LOG_DEBUG, DBG_ERRNO, "read(event_fd)");
+    else {
+        for (int i = 0; i < ready;i++)
+        {
+            CO_CANinterface_t *interface = &co->CANmodule->CANinterfaces[0];
+            struct epoll_event *ev_array = &(ep->ev);
+            if ((ev_array[i].events & EPOLLIN) != 0
+                    && ev_array[i].data.fd == ep->event_fd
+            ) {
+                uint64_t val;
+                ssize_t s = read(ep->event_fd, &val, sizeof(uint64_t));
+                if (s != sizeof(uint64_t)) {
+                    log_printf(LOG_DEBUG, DBG_ERRNO, "read(event_fd)");
+                }
+                ep->epoll_new = false;
+            }
+            else if (!ep->timerEvent && (ev_array[i].events & EPOLLIN) != 0
+                    && ev_array[i].data.fd == ep->timer_fd
+            ) {
+                uint64_t val;
+                ssize_t s = read(ep->timer_fd, &val, sizeof(uint64_t));
+                if (s != sizeof(uint64_t) && errno != EAGAIN) {
+                    log_printf(LOG_DEBUG, DBG_ERRNO, "read(timer_fd)");
+                }
+                ep->epoll_new = false;
+                ep->timerEvent = true;
+            }
+            else if ((ev_array[i].events & EPOLLIN) != 0
+                    && ev_array[i].data.fd == interface->fd)
+            {
+                if (CO_CANrxFromEpoll(co->CANmodule, &ep->ev, NULL, NULL)) {
+                    ep->epoll_new = false;
+                }
+            }
         }
-        ep->epoll_new = false;
-    }
-    else if ((ep->ev.events & EPOLLIN) != 0
-             && ep->ev.data.fd == ep->timer_fd
-    ) {
-        uint64_t val;
-        ssize_t s = read(ep->timer_fd, &val, sizeof(uint64_t));
-        if (s != sizeof(uint64_t) && errno != EAGAIN) {
-            log_printf(LOG_DEBUG, DBG_ERRNO, "read(timer_fd)");
-        }
-        ep->epoll_new = false;
-        ep->timerEvent = true;
     }
 }
 

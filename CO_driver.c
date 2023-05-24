@@ -287,13 +287,11 @@ CO_ReturnError_t CO_CANmodule_addInterface(CO_CANmodule_t *CANmodule,
                                            int can_ifindex)
 {
     int32_t ret;
-    int32_t tmp;
-    int32_t bytes;
+    int32_t bytes = 0;
     char *ifName;
     socklen_t sLen;
     CO_CANinterface_t *interface;
     struct sockaddr_can sockAddr;
-    struct epoll_event ev = {0};
 #if CO_DRIVER_ERROR_REPORTING > 0
     can_err_mask_t err_mask;
 #endif
@@ -327,8 +325,9 @@ CO_ReturnError_t CO_CANmodule_addInterface(CO_CANmodule_t *CANmodule,
         return CO_ERROR_SYSCALL;
     }
 
+#ifndef NUTTX_PLATFORM
+     int32_t tmp = 1;
     /* enable socket rx queue overflow detection */
-    tmp = 1;
     ret = setsockopt(interface->fd, SOL_SOCKET, SO_RXQ_OVFL, &tmp, sizeof(tmp));
     if(ret < 0){
         log_printf(LOG_DEBUG, DBG_ERRNO, "setsockopt(ovfl)");
@@ -344,10 +343,19 @@ CO_ReturnError_t CO_CANmodule_addInterface(CO_CANmodule_t *CANmodule,
         log_printf(LOG_DEBUG, DBG_ERRNO, "setsockopt(timestamping)");
         return CO_ERROR_SYSCALL;
     }
+#endif // NUTTX_PLATFORM
 
     //todo - modify rx buffer size? first one needs root
-    //ret = setsockopt(fd, SOL_SOCKET, SO_RCVBUFFORCE, (void *)&bytes, sLen);
-    //ret = setsockopt(fd, SOL_SOCKET, SO_RCVBUF, (void *)&bytes, sLen);
+    // ret = setsockopt(interface->fd, SOL_SOCKET, SO_RCVBUFFORCE, (void *)&bytes, sLen);
+    // if (ret < 0) {
+    //     log_printf(LOG_DEBUG, DBG_ERRNO, "setsockopt(rcvbuffforce)");
+    //     return CO_ERROR_SYSCALL;
+    // }
+    // ret = setsockopt(interface->fd, SOL_SOCKET, SO_RCVBUF, (void *)&bytes, sLen);
+    // if (ret < 0) {
+    //     log_printf(LOG_DEBUG, DBG_ERRNO, "setsockopt(rcvbuf)");
+    //     return CO_ERROR_SYSCALL;
+    // }
 
     /* print socket rx buffer size in bytes (In my experience, the kernel reserves
      * around 450 bytes for each CAN message) */
@@ -386,8 +394,8 @@ CO_ReturnError_t CO_CANmodule_addInterface(CO_CANmodule_t *CANmodule,
         return CO_ERROR_SYSCALL;
     }
 #endif /* CO_DRIVER_ERROR_REPORTING */
-
     /* Add socket to epoll */
+    struct epoll_event ev = {0};
     ev.events = EPOLLIN;
     ev.data.fd = interface->fd;
     ret = epoll_ctl(CANmodule->epoll_fd, EPOLL_CTL_ADD, ev.data.fd, &ev);
@@ -844,7 +852,6 @@ static CO_ReturnError_t CO_CANread(
     struct iovec iov;
     struct msghdr msghdr;
     char ctrlmsg[CMSG_SPACE(sizeof(struct timeval)) + CMSG_SPACE(sizeof(dropped))];
-    struct cmsghdr *cmsg;
 
     iov.iov_base = msg;
     iov.iov_len = sizeof(*msg);
@@ -856,7 +863,6 @@ static CO_ReturnError_t CO_CANread(
     msghdr.msg_control = &ctrlmsg;
     msghdr.msg_controllen = sizeof(ctrlmsg);
     msghdr.msg_flags = 0;
-
     n = recvmsg(interface->fd, &msghdr, 0);
     if (n != CAN_MTU) {
 #if CO_DRIVER_ERROR_REPORTING > 0
@@ -868,6 +874,7 @@ static CO_ReturnError_t CO_CANread(
     }
 
     /* check for rx queue overflow, get rx time */
+    struct cmsghdr *cmsg;
     for (cmsg = CMSG_FIRSTHDR(&msghdr);
          cmsg && (cmsg->cmsg_level == SOL_SOCKET);
          cmsg = CMSG_NXTHDR(&msghdr, cmsg)) {
@@ -952,7 +959,6 @@ bool_t CO_CANrxFromEpoll(CO_CANmodule_t *CANmodule,
     /* Verify for epoll events in CAN socket */
     for (uint32_t i = 0; i < CANmodule->CANinterfaceCount; i ++) {
         CO_CANinterface_t *interface = &CANmodule->CANinterfaces[i];
-
         if (ev->data.fd == interface->fd) {
             if ((ev->events & (EPOLLERR | EPOLLHUP)) != 0) {
                 struct can_frame msg;
@@ -971,7 +977,6 @@ bool_t CO_CANrxFromEpoll(CO_CANmodule_t *CANmodule,
                                                   &msg, &timestamp);
 
                 if(err == CO_ERROR_NO && CANmodule->CANnormal) {
-
                     if (msg.can_id & CAN_ERR_FLAG) {
                         /* error msg */
 #if CO_DRIVER_ERROR_REPORTING > 0

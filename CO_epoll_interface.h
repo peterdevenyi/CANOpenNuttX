@@ -143,7 +143,7 @@ void CO_epoll_close(CO_epoll_t *ep);
  *
  * @param ep This object
  */
-void CO_epoll_wait(CO_epoll_t *ep);
+void CO_epoll_wait(CO_epoll_t *ep, CO_t *co);
 
 /**
  * Closing function for an epoll event

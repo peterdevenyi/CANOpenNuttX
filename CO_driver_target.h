@@ -117,29 +117,15 @@ extern "C" {
 #endif
 
 #ifndef CO_CONFIG_TIME
-#define CO_CONFIG_TIME (CO_CONFIG_TIME_ENABLE | \
-                        CO_CONFIG_TIME_PRODUCER | \
-                        CO_CONFIG_GLOBAL_FLAG_CALLBACK_PRE | \
-                        CO_CONFIG_GLOBAL_FLAG_OD_DYNAMIC)
+#define CO_CONFIG_TIME (0)
 #endif
 
 #ifndef CO_CONFIG_LSS
-#define CO_CONFIG_LSS (CO_CONFIG_LSS_SLAVE | \
-                       CO_CONFIG_LSS_SLAVE_FASTSCAN_DIRECT_RESPOND | \
-                       CO_CONFIG_LSS_MASTER | \
-                       CO_CONFIG_GLOBAL_FLAG_CALLBACK_PRE)
+#define CO_CONFIG_LSS (0)
 #endif
 
 #ifndef CO_CONFIG_GTW
-#define CO_CONFIG_GTW 0
-/*#define CO_CONFIG_GTW (CO_CONFIG_GTW_ASCII | \
-                       CO_CONFIG_GTW_ASCII_SDO | \
-                       CO_CONFIG_GTW_ASCII_NMT | \
-                       CO_CONFIG_GTW_ASCII_LSS | \
-                       CO_CONFIG_GTW_ASCII_LOG | \
-                       CO_CONFIG_GTW_ASCII_ERROR_DESC | \
-                       CO_CONFIG_GTW_ASCII_PRINT_HELP | \
-                       CO_CONFIG_GTW_ASCII_PRINT_LEDS)*/
+#define CO_CONFIG_GTW (0)
 #define CO_CONFIG_GTW_BLOCK_DL_LOOP 3
 #define CO_CONFIG_GTWA_COMM_BUF_SIZE 2000
 #define CO_CONFIG_GTWA_LOG_BUF_SIZE 10000
