@@ -968,7 +968,8 @@ bool_t CO_CANrxFromEpoll(CO_CANmodule_t *CANmodule,
                 log_printf(LOG_DEBUG, DBG_CAN_RX_EPOLL,
                            ev->events, strerror(errno));
             }
-            else if ((ev->events & EPOLLIN) != 0) {
+            else
+            {
                 struct can_frame msg;
                 struct timespec timestamp;
 
@@ -1001,10 +1002,6 @@ bool_t CO_CANrxFromEpoll(CO_CANmodule_t *CANmodule,
                         }
                     }
                 }
-            }
-            else {
-                log_printf(LOG_DEBUG, DBG_EPOLL_UNKNOWN,
-                           ev->events, ev->data.fd);
             }
             return true;
         } /* if (ev->data.fd == interface->fd) */

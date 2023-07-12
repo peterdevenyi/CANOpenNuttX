@@ -193,10 +193,9 @@ void CO_epoll_wait(CO_epoll_t *ep, CO_t *co) {
                 ep->epoll_new = false;
                 ep->timerEvent = true;
             }
-            else if ((ev_array[i].events & EPOLLIN) != 0
-                    && ev_array[i].data.fd == interface->fd)
+            else if (ev_array[i].data.fd == interface->fd)
             {
-                if (CO_CANrxFromEpoll(co->CANmodule, &ep->ev, NULL, NULL)) {
+                if (CO_CANrxFromEpoll(co->CANmodule, &ev_array[i], NULL, NULL)) {
                     ep->epoll_new = false;
                 }
             }
@@ -332,13 +331,6 @@ void CO_epoll_processRT(CO_epoll_t *ep,
 {
     if (co == NULL || ep == NULL) {
         return;
-    }
-
-    /* Verify for epoll events */
-    if (ep->epoll_new) {
-        if (CO_CANrxFromEpoll(co->CANmodule, &ep->ev, NULL, NULL)) {
-            ep->epoll_new = false;
-        }
     }
 
     if (!realtime || ep->timerEvent) {

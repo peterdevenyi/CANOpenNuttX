@@ -37,7 +37,7 @@
 #include <linux/reboot.h>
 #include <sys/reboot.h>
 
-#include "CANopen.h"
+#include "CANopen.hpp"
 #include "OD.h"
 #include "CO_error.h"
 #include "CO_epoll_interface.h"

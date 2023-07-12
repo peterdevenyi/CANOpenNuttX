@@ -29,7 +29,7 @@
 #ifndef CO_EPOLL_INTERFACE_H
 #define CO_EPOLL_INTERFACE_H
 
-#include "CANopen.h"
+#include <CANopen.hpp>
 
 #include <sys/epoll.h>
 #include <sys/eventfd.h>

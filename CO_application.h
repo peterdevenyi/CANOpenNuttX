@@ -26,7 +26,7 @@
 #ifndef CO_APPLICATION_H
 #define CO_APPLICATION_H
 
-#include "CANopen.h"
+#include "CANopen.hpp"
 
 #ifdef __cplusplus
 extern "C" {
