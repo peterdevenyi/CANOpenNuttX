@@ -60,7 +60,7 @@ extern "C" {
 #define DBG_GENERAL               "(%s) Error: %s%d", __func__
 #define DBG_ERRNO                 "(%s) OS error \"%s\" in %s", __func__, strerror(errno)
 #define DBG_CO_DEBUG              "(%s) CO_DEBUG: %s", __func__
-#define DBG_CAN_TX_FAILED         "(%s) Transmitting CAN msg OID 0x%03x failed(%s)", __func__
+#define DBG_CAN_TX_FAILED         "(%s) Transmitting CAN msg OID 0x%03x failed(%s)\n", __func__
 #define DBG_CAN_RX_PARAM_FAILED   "(%s) Setting CAN rx buffer failed (%s)", __func__
 #define DBG_CAN_RX_FAILED         "(%s) Receiving CAN msg failed (%s)", __func__
 #define DBG_CAN_ERROR_GENERAL     "(%s) Socket error msg ID: 0x%08x, Data[0..7]: 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x, 0x%02x (%s)", __func__
